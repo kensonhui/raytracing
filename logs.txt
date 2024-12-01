@@ -1,0 +1,96 @@
+warning: unused imports: `Add`, `Div`, `Mul`, `Sub`
+ --> src/color/utils.rs:1:16
+  |
+1 | use std::ops::{Add, Sub, Mul, Div};
+  |                ^^^  ^^^  ^^^  ^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::ray::utils::Ray`
+ --> src/color/utils.rs:3:5
+  |
+3 | use crate::ray::utils::Ray;
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::color::utils::Color`
+ --> src/ray/utils.rs:1:5
+  |
+1 | use crate::color::utils::Color;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `dot`
+ --> src/ray/utils.rs:2:32
+  |
+2 | use crate::vec3::utils::{Vec3, dot};
+  |                                ^^^
+
+warning: unused import: `log::error`
+ --> src/hittable/utils.rs:1:5
+  |
+1 | use log::error;
+  |     ^^^^^^^^^^
+
+warning: unused import: `dot`
+ --> src/main.rs:9:32
+  |
+9 | use crate::vec3::utils::{Vec3, dot};
+  |                                ^^^
+
+warning: function `cross` is never used
+  --> src/vec3/utils.rs:92:8
+   |
+92 | pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
+   |        ^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field `front_face` is never read
+  --> src/hittable/utils.rs:15:5
+   |
+11 | pub struct HitRecord {
+   |            --------- field in this struct
+...
+15 |     front_face: bool,
+   |     ^^^^^^^^^^
+   |
+   = note: `HitRecord` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: methods `set_face_normal`, `p`, and `front_face` are never used
+  --> src/hittable/utils.rs:28:12
+   |
+18 | impl HitRecord {
+   | -------------- methods in this implementation
+...
+28 |     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
+   |            ^^^^^^^^^^^^^^^
+...
+34 |     pub fn p(&self) -> Vec3 {
+   |            ^
+...
+46 |     pub fn front_face(&self) -> bool {
+   |            ^^^^^^^^^^
+
+warning: method `clear` is never used
+  --> src/hittable/utils.rs:64:12
+   |
+55 | impl HittableList {
+   | ----------------- method in this implementation
+...
+64 |     pub fn clear(&mut self) {
+   |            ^^^^^
+
+warning: methods `center` and `radius` are never used
+   --> src/hittable/utils.rs:98:12
+    |
+93  | impl Sphere {
+    | ----------- methods in this implementation
+...
+98  |     pub fn center(&self) -> Vec3 {
+    |            ^^^^^^
+...
+102 |     pub fn radius(&self) -> f64 {
+    |            ^^^^^^
+
+warning: `raytracing` (bin "raytracing") generated 11 warnings (run `cargo fix --bin "raytracing"` to apply 6 suggestions)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.05s
+     Running `target/debug/raytracing`
