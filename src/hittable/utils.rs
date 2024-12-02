@@ -1,10 +1,9 @@
-use log::error;
-
 use crate::ray::utils::Ray;
 use crate::vec3::utils::{Vec3, dot};
+use crate::interval::utils::Interval;
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, t: &Interval, hit_record: &mut HitRecord) -> bool;
 } 
 
 #[derive(Clone)]
@@ -67,15 +66,14 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t: &Interval, hit_record: &mut HitRecord) -> bool {
         let mut temp_record = HitRecord::new();
         let mut hit_anything = false;
-        let mut closest_so_far = ray_tmax;
-
+        let mut closest_t = Interval::new(t.min(), t.max());
         for object in &self.objects {
-            if object.hit(r, ray_tmin, closest_so_far, &mut temp_record) {
+            if object.hit(r, &closest_t, &mut temp_record) {
                 hit_anything = true;
-                closest_so_far = temp_record.t();
+                closest_t.max = temp_record.t();
                 *hit_record = temp_record.clone();
             }
         }
@@ -104,7 +102,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, ray_t: &Interval, hit_record: &mut HitRecord) -> bool {
         let oc = self.center - ray.origin();
         let a = ray.direction().length_squared();
         let h = dot(ray.direction(), oc);
@@ -118,9 +116,9 @@ impl Hittable for Sphere {
         let discriminant_squareroot = discriminant.sqrt();
 
         let root = (h - discriminant_squareroot) / a;
-        if root < t_min || t_max < root {
+        if !ray_t.exclusive_contains(root) {
             let root = (h + discriminant_squareroot) / a;
-            if root < t_min || t_max < root {
+            if !ray_t.exclusive_contains(root) {
                 return false;
             }
         }

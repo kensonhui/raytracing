@@ -5,7 +5,6 @@ use crate::ray::utils::Ray;
 pub type Color = Vec3;
 
 impl Color {
-
     pub fn r(&self) -> f64 {
         self.x
     }
