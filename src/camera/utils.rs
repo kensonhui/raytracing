@@ -1,4 +1,5 @@
 use log::{debug, error, info};
+use std::time::{Duration, Instant};
 use std::error;
 use std::io::Write;
 use rand::Rng;
@@ -12,6 +13,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     image_height: i32,
     pixel_samples_scale: f64,
     center: Point3,
@@ -37,23 +39,26 @@ impl Camera {
         Ray::new(self.center, ray_direction)
     }
     pub fn render(&self, world: &dyn Hittable) {
+        let total = 20;
+        let start = Instant::now();
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
         for j in 0..self.image_height {
-            error!("\x1B[1K\rScanlines remaining: {}\x1B[F", self.image_height - j);
+            let bars = ">".repeat((j / total) as usize) + &" ".repeat(((self.image_height / total - (j / total)) as usize));
+            error!("\x1B[1K\rRendering Progress: [{}] - {:.1}%\x1B[F", bars, (j as f64 / self.image_height as f64) * 100.0);
             for i in 0..self.image_width {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _sample in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j);
-                    pixel_color += Camera::ray_color(&ray, world);
+                    pixel_color += Camera::ray_color(&ray, self.max_depth, world);
                 }
                 write_color(pixel_color / self.samples_per_pixel as f64);
             }
         }
-        error!("\x1B[1K\rDone rendering\x1B[F");
-        
+        let duration = start.elapsed();
+        error!("\x1B[1K\rDone rendering in {:?}", duration);
     }
 
-    pub fn new(aspect_ratio: f64, image_width: i32, samples_per_pixel: i32) -> Camera {
+    pub fn new(aspect_ratio: f64, image_width: i32, samples_per_pixel: i32, max_depth: i32) -> Camera {
         let image_height = (image_width as f64 / aspect_ratio) as i32;
         let pixel_samples_scale = 1.0 / samples_per_pixel as f64;
         let focal_length = 1.0;
@@ -71,6 +76,7 @@ impl Camera {
         Camera {
             aspect_ratio,
             image_width,
+            max_depth,
             samples_per_pixel,
             image_height,
             pixel_samples_scale,
@@ -81,11 +87,20 @@ impl Camera {
         }
     }
 
-    pub fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
+    pub fn ray_color(ray: &Ray, depth : i32, world: &dyn Hittable) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
         let mut record = HitRecord::new();
-        let sight_t = Interval::new(0.0, f64::INFINITY);
+        // Sometimes the ray hits the object at t = 0.0, which causes the shadow acne problem
+        let sight_t = Interval::new(0.001, f64::INFINITY);
         if world.hit(ray, &sight_t, &mut record) {
-            return 0.5 * Color::new(record.normal().x() + 1.0, record.normal().y() + 1.0, record.normal().z() + 1.0);
+            let direction = record.normal() + Vec3::random_unit_vector_in_unit_sphere();
+            return 0.3 * Camera::ray_color(
+                &Ray::new(record.p(), direction), 
+                depth - 1,
+                world
+            )
         }
 
         let unit_direction = ray.direction().unit_vector();

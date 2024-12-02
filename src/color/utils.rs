@@ -19,12 +19,20 @@ impl Color {
     }
 }
 
+pub fn linear_to_gamma(value: f64) -> f64 {
+    if value < 0.0 {
+        return 0.0;
+    } else {
+        return value.sqrt();
+    }
+}
+
 pub fn write_color(pixel_color: Color) {
     let intensity = Interval::new(0.0, 0.999);
     println!("{} {} {}", 
-        (255.0 * intensity.clamp(pixel_color.r())), 
-        (255.0 * intensity.clamp(pixel_color.g())), 
-        (255.0 * intensity.clamp(pixel_color.b()))
+        (255.0 * intensity.clamp(linear_to_gamma(pixel_color.r()))), 
+        (255.0 * intensity.clamp(linear_to_gamma(pixel_color.g()))), 
+        (255.0 * intensity.clamp(linear_to_gamma(pixel_color.b())))
     );
 }
 

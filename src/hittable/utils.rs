@@ -1,25 +1,39 @@
 use crate::ray::utils::Ray;
 use crate::vec3::utils::{Vec3, dot};
 use crate::interval::utils::Interval;
+use crate::material::utils::Material;
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t: &Interval, hit_record: &mut HitRecord) -> bool;
 } 
 
-#[derive(Clone)]
 pub struct HitRecord {
-    p: Vec3,
+    p: Vec3, // point of intersection
     normal: Vec3,
-    t: f64,
+    t: f64, // time of intersection
+    material: Option<Box<dyn Material>>,
     front_face: bool,
+}
+
+impl Clone for HitRecord {
+    fn clone(&self) -> Self {
+        HitRecord {
+            p: self.p,
+            normal: self.normal,
+            t: self.t,
+            material: self.material.clone(),
+            front_face: self.front_face,
+        }
+    }
 }
 
 impl HitRecord {
     pub fn new() -> HitRecord {
-        HitRecord {
+        HitRecord{
             p: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
+            material: None,
             front_face: false,
         }
     }

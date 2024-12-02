@@ -1,5 +1,6 @@
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
+use rand::Rng;
 
 #[derive(Clone, Copy)]
 pub struct Vec3 {
@@ -137,6 +138,39 @@ impl Vec3 {
 
     pub fn z(&self) -> f64 {
         self.z
+    }
+
+    pub fn random(min: f64, max: f64) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        Vec3::new(
+            rng.gen_range(min..max), 
+            rng.gen_range(min..max), 
+            rng.gen_range(min..max)
+        )
+    }
+
+    pub fn random_unit_vector_in_unit_sphere() -> Vec3 {
+        // Done so that random vector has a distribution which isn't sqewed
+        // towards the corners of the unit cube, since unit cube has more volume
+        // in the corners than a unit sphere
+        loop {
+            let vec = Vec3::random(0.0, 1.0).unit_vector();
+            // use length squared to avoid sqrt
+            let length_squared = vec.length_squared();
+            // Machine epilson is 1e-160
+            if (1e-160 < length_squared && length_squared < 1.0) {
+                return vec / length_squared.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_unit_sphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector_in_unit_sphere();
+        if dot(on_unit_sphere, *normal) > 0.0 {
+            return on_unit_sphere;
+        } else {
+            return -on_unit_sphere;
+        }
     }
 }
 
