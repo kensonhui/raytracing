@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 #[derive(Clone, Copy)]
 pub struct Vec3 {
@@ -18,6 +18,16 @@ impl Add for Vec3 {
             y: self.y + other.y,
             z: self.z + other.z,
         }
+    }
+}
+
+impl AddAssign<Vec3> for Vec3 {
+    fn add_assign(&mut self, other: Vec3) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        };
     }
 }
 

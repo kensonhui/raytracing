@@ -1,4 +1,5 @@
 use std::ops::{Add, Sub, Mul, Div};
+use crate::interval::utils::Interval;
 use crate::vec3::utils::Vec3;
 use crate::ray::utils::Ray;
 
@@ -19,10 +20,11 @@ impl Color {
 }
 
 pub fn write_color(pixel_color: Color) {
+    let intensity = Interval::new(0.0, 0.999);
     println!("{} {} {}", 
-        (255.999 * pixel_color.r()) as u8, 
-        (255.999 * pixel_color.g()) as u8, 
-        (255.999 * pixel_color.b()) as u8
+        (255.0 * intensity.clamp(pixel_color.r())), 
+        (255.0 * intensity.clamp(pixel_color.g())), 
+        (255.0 * intensity.clamp(pixel_color.b()))
     );
 }
 
