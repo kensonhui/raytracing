@@ -96,11 +96,21 @@ impl Camera {
         let sight_t = Interval::new(0.001, f64::INFINITY);
         if world.hit(ray, &sight_t, &mut record) {
             let direction = record.normal() + Vec3::random_unit_vector_in_unit_sphere();
-            return 0.3 * Camera::ray_color(
-                &Ray::new(record.p(), direction), 
-                depth - 1,
-                world
-            )
+            let mut scattered = Ray::new(record.p(), direction);
+            let mut attenuation = Color::new(0.0, 0.0, 0.0);
+            
+            match record.material() {
+                Some(material) => {
+                    if material.scatter(ray, &record, &mut attenuation, &mut scattered) {
+                        return Camera::ray_color(&scattered, depth - 1, world) * attenuation;
+                    }
+                    return Color::new(0.0, 0.0, 0.0);
+                },
+                None => {
+                    error!("No material found for an object\n");
+                    return Color::new(0.0, 0.0, 0.0);
+                }
+            }
         }
 
         let unit_direction = ray.direction().unit_vector();

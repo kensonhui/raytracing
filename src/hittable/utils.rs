@@ -1,3 +1,4 @@
+use crate::material;
 use crate::ray::utils::Ray;
 use crate::vec3::utils::{Vec3, dot};
 use crate::interval::utils::Interval;
@@ -5,6 +6,7 @@ use crate::material::utils::Material;
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t: &Interval, hit_record: &mut HitRecord) -> bool;
+    fn material(&self) -> Option<Box<dyn Material>>;
 } 
 
 pub struct HitRecord {
@@ -59,6 +61,10 @@ impl HitRecord {
     pub fn front_face(&self) -> bool {
         self.front_face
     }
+
+    pub fn material(&self) -> Option<Box<dyn Material>> {
+        self.material.clone()
+    }
 }
 
 pub struct HittableList {
@@ -94,16 +100,21 @@ impl Hittable for HittableList {
 
         return hit_anything;
     }
+
+    fn material(&self) -> Option<Box<dyn Material>> {
+        None
+    }
 }
 
 pub struct Sphere {
     center: Vec3,
     radius: f64,
+    material: Box<dyn Material>
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: f64, material: Box<dyn Material>) -> Sphere {
+        Sphere { center, radius, material }
     }
 
     pub fn center(&self) -> Vec3 {
@@ -140,7 +151,11 @@ impl Hittable for Sphere {
         hit_record.t = root;
         hit_record.p = ray.at(hit_record.t);
         hit_record.normal = (hit_record.p - self.center) / self.radius;
-
+        hit_record.material = self.material();
         return true;
+    }
+
+    fn material(&self) -> Option<Box<dyn Material>> {
+        Some(self.material.clone())
     }
 }

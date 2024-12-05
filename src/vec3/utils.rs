@@ -65,6 +65,17 @@ impl Mul<Vec3> for f64 {
     }
 }
 
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+    fn mul(self, v: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * v.x,
+            y: self.y * v.y,
+            z: self.z * v.z,
+        }
+    }
+}
+
 impl Div<f64> for Vec3 {
     type Output = Self;
     fn div(self, t: f64) -> Self {
@@ -123,6 +134,15 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        return (self.x.abs() < s) && (self.y.abs() < s) && (self.z.abs() < s);
+    }
+
+    pub fn reflect(&self, normal: Vec3) -> Vec3 {
+        return *self - 2.0 * dot(*self, normal) * normal;
+    }
+
     pub fn unit_vector(&self) -> Vec3{
         let vector = Vec3::new(self.x, self.y, self.z);
         return vector / self.length();
@@ -140,7 +160,7 @@ impl Vec3 {
         self.z
     }
 
-    pub fn random(min: f64, max: f64) -> Vec3 {
+    fn random(min: f64, max: f64) -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3::new(
             rng.gen_range(min..max), 
