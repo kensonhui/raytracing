@@ -18,8 +18,8 @@ fn main() {
     let mut world = HittableList::new();
     let material_ground = Box::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)));
     let material_center = Box::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5)));
-    let material_left = Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8)));
-    let material_right = Box::new(Metal::new(Vec3::new(0.8, 0.6, 0.2)));
+    let material_left = Box::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Box::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.1));
     
     world.add(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, material_ground)));
     world.add(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.2), 0.5, material_center)));

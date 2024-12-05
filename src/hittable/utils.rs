@@ -9,7 +9,7 @@ pub trait Hittable {
     fn material(&self) -> Option<Box<dyn Material>>;
 } 
 
-pub struct HitRecord {
+pub struct HitRecord{
     p: Vec3, // point of intersection
     normal: Vec3,
     t: f64, // time of intersection
