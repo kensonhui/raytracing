@@ -7,7 +7,7 @@ mod camera;
 mod material;
 
 use std::sync::Arc;
-use crate::vec3::utils::{Vec3};
+use crate::vec3::utils::Vec3;
 use crate::hittable::utils::{HittableList, Sphere, Hittable};
 use crate::camera::utils::Camera;
 use crate::material::utils::{Metal, Lambertian};
