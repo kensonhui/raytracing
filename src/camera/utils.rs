@@ -1,14 +1,16 @@
-use log::{debug, error, info};
-use std::time::{Duration, Instant};
-use std::error;
-use std::io::Write;
+use std::sync::Arc;
+use std::thread;
+use log::error;
+use std::time::Instant;
+use std::sync::Mutex;
 use rand::Rng;
 use crate::color::utils::{Color, write_color};
-use crate::vec3::utils::{Vec3, Point3, dot};
-use crate::hittable::utils::{Hittable, HitRecord};
-use crate::interval::utils::{Interval};
+use crate::vec3::utils::{Vec3, Point3};
+use crate::hittable::utils::{HitRecord, Hittable, HittableList};
+use crate::interval::utils::Interval;
 use crate::ray::utils::Ray;
 
+#[derive(Clone)]
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
@@ -38,21 +40,40 @@ impl Camera {
         let ray_direction = pixel_center - self.center;
         Ray::new(self.center, ray_direction)
     }
-    pub fn render(&self, world: &dyn Hittable) {
-        let total = 20;
+    pub fn render(&self, world: Arc<dyn Hittable>) {
+        let total_progress_bars = 20;
         let start = Instant::now();
-        println!("P3\n{} {}\n255", self.image_width, self.image_height);
+        let mut handles: Vec<thread::JoinHandle<()>> = vec![];
+        let shared_array = Arc::new(Mutex::new(vec![String::new(); self.image_height as usize]));
         for j in 0..self.image_height {
-            let bars = ">".repeat((j / total) as usize) + &" ".repeat(((self.image_height / total - (j / total)) as usize));
-            error!("\x1B[1K\rRendering Progress: [{}] - {:.1}%\x1B[F", bars, (j as f64 / self.image_height as f64) * 100.0);
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-                for _sample in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j);
-                    pixel_color += Camera::ray_color(&ray, self.max_depth, world);
+            let bars = ">".repeat((j / total_progress_bars) as usize) + &" ".repeat(((self.image_height / total_progress_bars - (j / total_progress_bars)) as usize));
+            let shared_array = Arc::clone(&shared_array);
+            let world = Arc::clone(&world);
+            let camera_clone = self.clone();
+            let handle = thread::spawn(move || {
+                let mut row: String = "".to_string();
+                for i in 0..camera_clone.image_width {
+                    let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+                    for _sample in 0..camera_clone.samples_per_pixel {
+                        let ray = camera_clone.get_ray(i, j);
+                        pixel_color += Camera::ray_color(&ray, camera_clone.max_depth, world.clone());
+                    }
+                    row += &write_color(pixel_color / camera_clone.samples_per_pixel as f64);
+                    row += "\n";
                 }
-                write_color(pixel_color / self.samples_per_pixel as f64);
-            }
+                let mut shared_array = shared_array.lock().unwrap();
+                shared_array[j as usize] = row;
+            });
+            handles.push(handle);
+        }
+        
+        for handle in handles {
+            handle.join().unwrap();
+        }
+        let shared_array = shared_array.lock().unwrap();
+        println!("P3\n{} {}\n255", self.image_width, self.image_height);
+        for row in shared_array.iter() {
+            println!("{}", row);
         }
         let duration = start.elapsed();
         error!("\x1B[1K\rDone rendering in {:?}", duration);
@@ -87,7 +108,7 @@ impl Camera {
         }
     }
 
-    pub fn ray_color(ray: &Ray, depth : i32, world: &dyn Hittable) -> Color {
+    pub fn ray_color(ray: &Ray, depth : i32, world: Arc<dyn Hittable>) -> Color {
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }

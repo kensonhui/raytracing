@@ -4,7 +4,7 @@ use crate::vec3::utils::{Vec3, dot};
 use crate::interval::utils::Interval;
 use crate::material::utils::Material;
 
-pub trait Hittable {
+pub trait Hittable : Sync + Send{
     fn hit(&self, r: &Ray, t: &Interval, hit_record: &mut HitRecord) -> bool;
     fn material(&self) -> Option<Box<dyn Material>>;
 } 

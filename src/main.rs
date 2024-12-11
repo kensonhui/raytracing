@@ -6,8 +6,9 @@ mod interval;
 mod camera;
 mod material;
 
+use std::sync::Arc;
 use crate::vec3::utils::{Vec3};
-use crate::hittable::utils::{HittableList, Sphere};
+use crate::hittable::utils::{HittableList, Sphere, Hittable};
 use crate::camera::utils::Camera;
 use crate::material::utils::{Metal, Lambertian};
 
@@ -26,6 +27,8 @@ fn main() {
     world.add(Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
     world.add(Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, material_right)));
 
+    let worldpointer: Arc<dyn Hittable + Sync + Send> = Arc::new(world);
+
     // Camera
     let aspect_ratio = 16.0/9.0;
     let image_width = 400;
@@ -33,5 +36,5 @@ fn main() {
     let max_depth = 50;
     let camera = Camera::new(aspect_ratio, image_width, samples_per_pixel, max_depth);
 
-    camera.render(&world);
+    camera.render(worldpointer);
 }

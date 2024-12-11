@@ -1,7 +1,5 @@
-use std::ops::{Add, Sub, Mul, Div};
 use crate::interval::utils::Interval;
 use crate::vec3::utils::Vec3;
-use crate::ray::utils::Ray;
 
 pub type Color = Vec3;
 
@@ -27,9 +25,9 @@ pub fn linear_to_gamma(value: f64) -> f64 {
     }
 }
 
-pub fn write_color(pixel_color: Color) {
+pub fn write_color(pixel_color: Color) -> String {
     let intensity = Interval::new(0.0, 0.999);
-    println!("{} {} {}", 
+    return format!("{} {} {}", 
         (255.0 * intensity.clamp(linear_to_gamma(pixel_color.r()))), 
         (255.0 * intensity.clamp(linear_to_gamma(pixel_color.g()))), 
         (255.0 * intensity.clamp(linear_to_gamma(pixel_color.b())))

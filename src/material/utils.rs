@@ -3,7 +3,7 @@ use crate::color::utils::Color;
 use crate::hittable::utils::HitRecord;
 use crate::vec3::utils::Vec3;
 
-pub trait Material {
+pub trait Material : Sync + Send{
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool;
     fn clone_box(&self) -> Box<dyn Material>;
 }
